@@ -108,7 +108,7 @@ filtered_team_df = filtered_df[filtered_df["Team"] == team_filter]
 
 
 highlight_tab, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🎮 Highlights",
+    "Highlights",
     "Player Stats",
     "Pick/Ban Trends",
     "Match Summaries",
@@ -116,13 +116,17 @@ highlight_tab, tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "All Team Stats"
 ])
 
-
 with highlight_tab:
     st.header("Match Highlights")
-    st.video("https://youtu.be/5bgl3b09hqQ")  # Quarterfinals
-    st.video("https://youtu.be/elBETWSuMSs")  # Semifinals
-    st.video("https://youtu.be/vlRt36fKgaw")  # Finals
 
+    st.markdown("### Quarterfinals")
+    st.video("https://youtu.be/5bgl3b09hqQ")
+
+    st.markdown("### Semifinals")
+    st.video("https://youtu.be/elBETWSuMSs")
+
+    st.markdown("### Finals")
+    st.video("https://youtu.be/vlRt36fKgaw")
 
 with tab1:
     st.header(f"Player Stats for {team_filter}")
@@ -145,22 +149,12 @@ with tab1:
             player = st.selectbox("Select Player", options=players)
             player_stats = filtered_team_df[filtered_team_df["Player IGN"] == player]
 
-
             if "_" not in player:
                 player_for_image = team_filter + "_" + player
             else:
                 player_for_image = player
 
             player_img_path = get_image_path("images/players", player_for_image)
-            if player_img_path:
-                player_img = Image.open(player_img_path)
-                st.image(player_img, width=120)
-            else:
-                st.warning(f"Player image for {player_for_image} not found.")
-
-            if "Player Real Name" in player_stats.columns:
-                real_name = player_stats["Player Real Name"].iloc[0]
-                st.markdown(f"**Real Name:** {real_name}")
 
             if not player_stats.empty:
                 stats = player_stats[
@@ -174,12 +168,25 @@ with tab1:
                 avg_cs_min = player_stats["CS/Min"].mean()
                 avg_gpm = player_stats["GPM"].mean()
 
-                st.markdown(f"**Total KDA:** {kda['Kills']}/{kda['Deaths']}/{kda['Assists']}")
-                st.markdown(f"**Average CS/Min:** {avg_cs_min:.1f}")
-                st.markdown(f"**Average GPM:** {avg_gpm:.1f}")
+                real_name = player_stats["Player Real Name"].iloc[
+                    0] if "Player Real Name" in player_stats.columns else "N/A"
+
+                # Show player image and key stats side by side, including real name
+                cols = st.columns([1, 3])
+                if player_img_path:
+                    player_img = Image.open(player_img_path)
+                    cols[0].image(player_img, width=120)
+                else:
+                    cols[0].warning(f"Player image for {player_for_image} not found.")
+
+                cols[1].markdown(f"""
+                **Real Name:** {real_name}  
+                **Total KDA:** {kda['Kills']}/{kda['Deaths']}/{kda['Assists']}  
+                **Average CS/Min:** {avg_cs_min:.1f}  
+                **Average GPM:** {avg_gpm:.1f}
+                """)
             else:
                 st.info("Player stats are empty.")
-
 
 with tab2:
     st.header("Champion Pick/Ban Trends")
@@ -300,13 +307,13 @@ with tab5:
             else:
                 cols[0].warning("No logo")
             stats_md = (
-                f"**Team:** {row['Team']}\n\n"
-                f"**Kills:** {row['Kills_sum']} (avg: {row['Kills_mean']})\n\n"
-                f"**Deaths:** {row['Deaths_sum']} (avg: {row['Deaths_mean']})\n\n"
-                f"**Assists:** {row['Assists_sum']} (avg: {row['Assists_mean']})\n\n"
-                f"**Gold:** {row['Gold_sum']} (avg: {row['Gold_mean']})\n\n"
-                f"**CS:** {row['CS_sum']} (avg: {row['CS_mean']})\n\n"
-                f"**CS/Min:** {row['CS/Min_mean']}\n\n"
-                f"**GPM:** {row['GPM_mean']}"
+                f"**Team:** {row['Team']}  |  "
+                f"**Kills:** {row['Kills_sum']} (avg: {row['Kills_mean']})  |  "
+                f"**Deaths:** {row['Deaths_sum']} (avg: {row['Deaths_mean']})  |  "
+                f"**Assists:** {row['Assists_sum']} (avg: {row['Assists_mean']})  |  "
+                f"**Gold:** {row['Gold_sum']} (avg: {row['Gold_mean']})  |  "
+                f"**CS:** {row['CS_sum']} (avg: {row['CS_mean']})  |  "
+                f"**CS/Min:** {row['CS/Min_mean']:.1f}  |  "
+                f"**GPM:** {row['GPM_mean']:.1f}"
             )
             cols[1].markdown(stats_md)
